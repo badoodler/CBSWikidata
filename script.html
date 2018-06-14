@@ -1,0 +1,67 @@
+<html>
+<head>
+
+</head>
+<body>
+    <div id="container"></div>
+</body>
+<script>
+var srcTableUrl = 'https://opendata.cbs.nl/#/CBS/nl/dataset/37296ned'
+var yearDecrement = 0;
+var jsonArr = [];
+
+
+
+getWorkingUrlForYear();
+download()
+
+function getWorkingUrlForYear()
+{
+	var req = new XMLHttpRequest(); 
+	var date = new Date()
+	var maand = date.getMonth()+1;
+	var dag = date.getDate();
+	var jaar = parseInt(((date).getFullYear()));
+	var lastUpdated = jaar + "/" + maand + "/" + dag;
+	var srcurl = 'https://opendata.cbs.nl/ODataApi/odata/37296ned/UntypedDataSet?$filter=((Perioden+eq+%27'+ (jaar - yearDecrement)+ 'JJ00%27))&$select=TotaleBevolking_1'
+	req.open('GET', srcurl, false);
+	req.send(null);  
+	var obj = JSON.parse(req.responseText);
+	if(yearDecrement < 100)
+	{
+		
+		for(var key in obj.value[0])
+		{
+			var result = obj.value[0][key];
+		}
+		if(result != undefined)
+		{
+			jsonArr.push({
+			result : result,
+			srcTableUrl : srcTableUrl,
+			lastUpdated : lastUpdated,
+			srcurl : srcurl,
+			srcDate: (jaar-yearDecrement)
+			});
+			console.log(result, srcTableUrl,lastUpdated,(jaar-yearDecrement),srcurl)
+		}
+		yearDecrement += 1;
+		getWorkingUrlForYear();
+		//var json = JSON.stringify(myObject);
+	}
+}
+
+function download() {
+      var data  = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(jsonArr));
+ 
+      var a       = document.createElement('a');
+      a.href      = 'data:' + data;
+      a.download  = 'data.txt';
+      a.innerHTML = 'download .txt file of json';
+ 
+      document.getElementById('container').appendChild(a);
+}
+
+
+</script>
+</html>
